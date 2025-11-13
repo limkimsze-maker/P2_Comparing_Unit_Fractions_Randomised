@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+/>
+<title>Unit Fractions — Practice & Test (1/2–1/12)</title>
+
+<!-- === xAPI / SLS base (SET TO YOUR REQUESTED ACTIVITY ID, UNCHANGED) === -->
+<script>
+  window.ACTIVITY_ID = "https://limkimsze-maker.github.io/P2_Unit_Fractions/";
+</script>
+<script src="xapiwrapper.min.js"></script>
+<script src="index.js" defer></script>
+
+<!-- === Always-Clear on Load (runs before any hydrate) === -->
+<script>
+(function (global){
+  const ACTIVITY_ID = String(global.ACTIVITY_ID || location.href);
+
+  function broadcastClear(){
+    try {
+      const bc = new BroadcastChannel('xapi-state');
+      bc.postMessage({ type:'clear', activityId: ACTIVITY_ID, ts: Date.now() });
+      bc.close?.();
+    } catch(e) {}
+  }
+
+  function clearAllForActivity(){
+    try {
+      const prefixes = [
+        `${ACTIVITY_ID}`,
+        `sls_scope::${ACTIVITY_ID}`,
+        `UFCO-firstSubmit::${ACTIVITY_ID}`,
+        `sls_unlike_payload::${ACTIVITY_ID}`
+      ];
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (!k) continue;
+        if (prefixes.some(p => k === p || k.startsWith(p))) {
+          localStorage.removeItem(k);
+        }
+      }
+      sessionStorage.removeItem(`${ACTIVITY_ID}::locked`);
+      sessionStorage.removeItem(`${ACTIVITY_ID}::done`);
+    } catch(e) {}
+    broadcastClear();
+  }
+
+  clearAllForActivity();
+})(window);
+</script>
+
+<style>
+  :root{
+    --ink:#0f172a; --muted:#475569; --line:#e2e8f0;
+    --bg-1:#fff7ed; --bg-2:#eef6ff; --panel:#ffffff; --tile:#fffef5;
+    --accent:#7c3aed; --accent-2:#f97316; --accent-3:#06b6d4;
+    --good:#16a34a; --bad:#dc2626;
+    --shadow: 0 6px 16px rgba(17,24,39,.08), 0 2px 6px rgba(17,24,39,.06);
+    --shadow-sm: 0 3px 10px rgba(17,24,39,.06);
+    --round: 16px;
+
+    --bannerbg:#eff6ff; --bannerborder:#bfdbfe; --bannertext:#1e3a8a;
+
+    /* fluid type helpers */
+    --fs-hero: clamp(18px, 4.5vw, 26px);
+    --fs-h2: clamp(16px, 3.8vw, 19px);
+    --fs-base: clamp(14px, 3.6vw, 17px);
+    --fs-small: clamp(12px, 3.2vw, 14px);
+    --fs-chip: clamp(12px, 3.2vw, 15px);
+    --fs-btn: clamp(13px, 3.6vw, 16px);
+    --fs-relop: clamp(16px, 5vw, 18px);
+    --frac-num: clamp(18px, 6vw, 22px);
+    --frac-den: clamp(15px, 4.8vw, 18px);
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--ink);
+    font:var(--fs-base)/1.5 "Comic Sans MS","Comic Neue","Lexend",system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+    background:
+      radial-gradient( 18rem 18rem at 12% 8%, rgba(249,200,255,.35), transparent 55%),
+      radial-gradient( 22rem 22rem at 82% 14%, rgba(255,238,150,.35), transparent 55%),
+      radial-gradient( 18rem 18rem at 18% 90%, rgba(168,240,255,.35), transparent 55%),
+      linear-gradient(180deg, var(--bg-1), var(--bg-2) 60%);
+    display:flex; align-items:flex-start; justify-content:center; padding:16px;
+  }
+
+  /* Hidden teacher/xAPI panel (present but hidden) */
+  .container { background:#fff; padding:10px; border-radius:8px; box-shadow:0 0 5px rgba(0,0,0,.08); width:590px; height:470px; overflow:auto; display:none; }
+  #xapiBase { display:block; }
+
+  input, select, button { margin:5px; padding:6px; font-size:14px; border:1px solid #ccc; border-radius:4px; }
+  button { background-color:#28a745; color:#fff; border:none; cursor:pointer; }
+  button:hover { background-color:#218838; }
+
+  .output-container { margin-top:10px; padding:5px; border:1px solid #ddd; border-radius:4px; background:#fafafa; overflow:auto; max-height:200px; }
+  pre { background:#e9ecef; padding:5px; border-radius:4px; white-space:pre-wrap; word-wrap:break-word; margin:0; overflow-x:auto; }
+
+  .app{ width:100%; max-width:1060px; background:var(--panel); border-radius:var(--round); box-shadow: 0 24px 48px rgba(15,23,42,.18); padding:16px; position:relative; }
+  header{
+    position:sticky; top:0; z-index:5;
+    background:linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.96)) padding-box,
+               linear-gradient(135deg, #a78bfa 0%, #f472b6 45%, #f59e0b 100%) border-box;
+    border-bottom:1px solid transparent; border-image:linear-gradient(135deg, #a78bfa, #f472b6, #f59e0b) 1;
+    backdrop-filter: blur(6px);
+    padding:18px 18px 16px; box-shadow: var(--shadow-sm); border-radius:14px;
+  }
+  h1{ margin:0 0 6px; font-size:var(--fs-hero); display:flex; align-items:center; gap:.5ch; }
+  h1::before{ content:"🟣"; filter:saturate(1.2); }
+  .heroNote{
+    margin-top:8px; border:2px solid var(--bannerborder); background:var(--bannerbg); color:var(--bannertext);
+    border-radius:14px; padding:10px 12px; font-weight:900; font-size:var(--fs-small);
+  }
+  .bar{ display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:12px }
+  .group{
+    display:flex;gap:8px;align-items:center;
+    border:2px solid transparent;border-radius:999px;
+    background: linear-gradient(#fff,#fff) padding-box, linear-gradient(135deg,#60a5fa,#a78bfa,#f472b6) border-box;
+    padding:8px 12px; box-shadow: var(--shadow-sm);
+    font-size:var(--fs-small);
+  }
+
+  .tabs{
+    margin-left:auto; display:flex; gap:10px; padding:6px; border-radius:999px;
+    background:linear-gradient(#fff,#fff) padding-box, linear-gradient(135deg,#a78bfa,#60a5fa) border-box;
+    border:2px solid transparent; box-shadow:var(--shadow-sm);
+  }
+  .tabbtn{
+    border:none; padding:10px 16px; border-radius:999px; font-weight:900; cursor:pointer; font-size:var(--fs-btn);
+    background:#fff; color:var(--ink); box-shadow:0 6px 14px rgba(17,24,39,.08);
+  }
+  .tabbtn.active{ background:linear-gradient(135deg,#7c3aed,#22d3ee); color:#fff }
+  .tabbtn.locked{
+    background:#e5e7eb!important; color:#64748b!important; cursor:not-allowed; filter:grayscale(1);
+    border:2px dashed #cbd5e1;
+  }
+  .teacherBtn{
+    margin-left:8px; border:none; padding:8px 12px; border-radius:999px; font-weight:900; cursor:pointer;
+    background:linear-gradient(135deg,#ef4444,#f59e0b); color:#fff; box-shadow:var(--shadow-sm);
+    font-size:var(--fs-small);
+  }
+
+  section{margin-top:22px}
+  h2{font-size:var(--fs-h2);margin:0 0 10px}
+  .card{
+    position:relative;
+    background: linear-gradient(#fff,#fff) padding-box, linear-gradient(135deg, rgba(124,58,237,.6), rgba(6,182,212,.6)) border-box;
+    border:2px solid transparent; border-radius:var(--round);
+    padding:14px; margin-bottom:14px; box-shadow: var(--shadow);
+  }
+  .qnum{
+    position:absolute; top:8px; left:8px;
+    font-weight:900; font-size:11px; color:#334155;
+    background:#f1f5f9; border:1px solid #cbd5e1; border-radius:999px; padding:3px 8px;
+  }
+
+  .compare-row{ display:grid; grid-template-columns: 1fr auto 1fr; gap:14px; align-items:center; }
+  .side{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .compare-row .side:first-child{ color:#06b6d4; } .compare-row .side:last-child{ color:#f97316; }
+
+  .frac{ display:inline-grid; grid-template-rows:auto auto; justify-items:center; min-width:84px; padding:6px 10px; border-radius:12px; background: var(--tile); box-shadow: inset 0 -2px 0 rgba(0,0,0,.03); }
+  .frac .num{ border-bottom:3px solid var(--ink); width:100%; text-align:center; font-weight:900; font-size:var(--frac-num); }
+  .frac .den{ padding-top:2px; font-size:var(--frac-den); font-weight:800 }
+
+  .pic{ display:block; width:100%; max-width:132px; height:auto }
+  .tile .pic{ max-width:120px }
+
+  select.relop{ padding:10px 12px; min-width:64px; border:2px solid var(--line); border-radius:12px; background:#fff; font-size:var(--fs-relop); font-weight:800; color:var(--ink); box-shadow: var(--shadow-sm); }
+  .result-badge{ font-size:13px; margin-left:8px; display:inline-flex; align-items:center; justify-content:center; min-width:24px; height:24px; border-radius:999px; font-weight:900; }
+  .compare-row.correct .result-badge{ background:#dcfce7; color:#166534; }
+  .compare-row.incorrect .result-badge{ background:#fee2e2; color:#991b1b; }
+
+  .order-instr{color:var(--muted);font-size:var(--fs-small);margin-bottom:8px}
+  .sortable{
+    display:flex; gap:14px; flex-wrap:wrap; min-height:86px; padding:10px;
+    border:2px dashed transparent; border-radius:14px;
+    background:
+      linear-gradient(#ffffff, #ffffff) padding-box,
+      repeating-linear-gradient(45deg, #a78bfa, #a78bfa 10px, #60a5fa 10px, #60a5fa 20px) border-box;
+  }
+  .tile{
+    user-select:none; cursor:grab;
+    background: linear-gradient(180deg,#fff9e5,#fff);
+    border:2px solid transparent; border-radius:14px; padding:10px 12px;
+    display:grid; gap:8px; justify-items:center; min-width:110px;
+    box-shadow: var(--shadow); transition: transform .12s ease, box-shadow .12s ease; color:#7c3aed;
+    touch-action: manipulation;
+  }
+  .tile:hover{ transform: translateY(-2px) rotate(-.2deg); box-shadow: 0 10px 20px rgba(17,24,39,.12); }
+  .tile:active{ cursor:grabbing; transform: scale(.98); }
+  .tile.dragging{ opacity:.85; outline:3px dashed var(--accent); }
+  .tile .label{font-weight:900}
+
+  .q-actions{ display:flex; gap:10px; justify-content:center; margin-top:12px }
+  .qbtn{
+    padding:10px 14px; border:none; border-radius:12px;
+    background: linear-gradient(135deg, #7c3aed, #22d3ee);
+    color:#fff; font-weight:900; cursor:pointer; box-shadow: var(--shadow-sm);
+    font-size:var(--fs-btn);
+    touch-action: manipulation;
+  }
+  .qbtn.secondary{ background: linear-gradient(135deg,#ffffff,#f1f5f9); color:var(--ink); border:2px solid var(--line); }
+
+  .actions{display:flex;gap:14px;align-items:center;margin:22px 0; flex-wrap:wrap; justify-content:center}
+  button.appbtn{
+    padding:12px 16px; border:none; border-radius:14px;
+    background: linear-gradient(135deg, #7c3aed, #22d3ee);
+    color:#fff; font-weight:900; letter-spacing:.2px; font-size:var(--fs-btn);
+    box-shadow: var(--shadow); transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+    cursor:pointer; touch-action: manipulation;
+  }
+  button.appbtn.secondary{ background: linear-gradient(135deg,#ffffff,#f1f5f9); color:var(--ink); border:2px solid var(--line); }
+  button.appbtn[disabled]{ opacity:.5; filter:grayscale(1); cursor:not-allowed; }
+
+  @keyframes pop { 0%{transform:scale(.97)} 60%{transform:scale(1.02)} 100%{transform:scale(1)} }
+  .correct{ outline:3px solid var(--good); box-shadow: 0 0 0 6px rgba(22,163,74,.08) }
+  .incorrect{ outline:3px solid var(--bad); box-shadow: 0 0 0 6px rgba(220,38,38,.08) }
+  .correct, .incorrect{ animation: pop .22s ease-out }
+
+  .hidden{display:none !important}
+  .scorechip{
+    margin-left:auto; padding:8px 10px; border:2px solid transparent; border-radius:999px;
+    background: linear-gradient(#fff,#fff) padding-box, linear-gradient(135deg,#34d399,#60a5fa,#f59e0b) border-box;
+    display:flex; gap:10px; font-weight:800; box-shadow: var(--shadow-sm);
+    font-size:var(--fs-chip); flex-wrap:wrap;
+  }
+  .scorechip small{color:var(--muted);font-weight:700}
+
+  .banner{ display:none; margin:14px 0; padding:12px 16px; border-radius:14px; font-weight:900;
+           background:#ecfeff; border:2px solid #67e8f9; color:#155e75; font-size:var(--fs-small); }
+  .banner.show{display:block}
+
+  #miniSLS{
+    position:sticky; bottom:12px; margin-top:12px;
+    background:var(--bannerbg); border:1px solid var(--bannerborder);
+    border-radius:10px; padding:8px 10px; color:var(--bannertext);
+    font-size:var(--fs-small); font-weight:700; line-height:1.3;
+  }
+  #statusBadge{
+    display:none; margin:10px 0; font-size:var(--fs-small); font-weight:700; line-height:1.3;
+    background:#0f172a; color:#fff; padding:8px 12px; border-radius:12px; text-align:center;
+  }
+  footer{ margin-top:10px;color:var(--muted);font-size:11px; display:flex;justify-content:space-between;align-items:center; gap:8px }
+  footer::before{ content:"🎉"; }
+
+  /* ==== Practice Complete Modal ==== */
+  .modalOverlay{
+    position:fixed; inset:0; background:rgba(15,23,42,.45);
+    display:none; align-items:center; justify-content:center; z-index:50;
+    padding:16px;
+  }
+  .modal{
+    width:min(92vw,540px);
+    background:#fff; border-radius:16px; box-shadow:0 30px 80px rgba(0,0,0,.25);
+    border:2px solid #c7d2fe; padding:18px;
+  }
+  .modal h3{ margin:0 0 8px; font-size:clamp(18px, 4.4vw, 20px) }
+  .modal p{ margin:6px 0 14px; color:#334155; font-size:var(--fs-base) }
+  .modal .row{ display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap }
+  .btn{
+    padding:10px 14px; border:none; border-radius:12px; font-weight:900; cursor:pointer;
+    background:linear-gradient(135deg,#7c3aed,#22d3ee); color:#fff; box-shadow:var(--shadow-sm);
+    font-size:var(--fs-btn);
+  }
+  .btn.secondary{ background:linear-gradient(135deg,#ffffff,#f1f5f9); color:var(--ink); border:2px solid #cbd5e1; }
+
+  /* ========= MOBILE LAYOUT TWEAKS ========= */
+  @media (max-width: 768px){
+    body{ padding:12px }
+    .app{ padding:12px; border-radius:14px }
+    header{ padding:14px }
+    .bar{ gap:10px }
+    .tabs{ gap:8px; padding:4px }
+    .tabbtn{ padding:8px 14px }
+    .teacherBtn{ padding:6px 10px }
+    .card{ padding:12px }
+    .qnum{ font-size:10px }
+    .actions{ margin:16px 0 }
+  }
+
+  @media (max-width: 600px){
+    .compare-row{ display:flex; flex-direction:column; align-items:center; gap:10px }
+    .frac{ min-width:auto }
+    .tile{ min-width:96px; padding:8px 10px }
+    .sortable{ gap:10px; padding:8px; min-height:72px }
+    .scorechip{ justify-content:center }
+    .group{ padding:6px 10px }
+    .heroNote{ padding:8px 10px }
+    footer{ flex-direction:column }
+  }
+</style>
+</head>
+<body>
+
+<!-- Hidden xAPI base panel (kept for SLS wiring/testing) -->
+<div class="container" id="xapiOuter">
+  <div id="xapiBase">
+    <p class="center"><strong>HTML5 Interactive</strong></p>
+
+    <div class="center">
+      <label for="score-input">Score:</label>
+      <input type="text" id="score-input" />
+      <label for="feedback-input">Feedback:</label>
+      <input type="text" id="feedback-input" placeholder="Enter feedback" />
+    </div>
+
+    <div class="center">
+      <button id="save-store" type="button">Send/Save</button>
+      <button id="clear-inputs" type="button">Clear</button>
+      <button id="newSessionBtn" type="button" style="display:none;">_newSession</button>
+    </div>
+
+    <div class="output-container">
+      <pre id="result"></pre>
+      <hr class="separator" />
+      <pre id="getState"></pre>
+      <hr class="separator" />
+      <pre id="questionId"></pre>
+      <pre id="userId"></pre>
+      <pre id="cookieId"></pre>
+      <a id="activityLink" href="https://limkimsze-maker.github.io/P2_Unit_Fractions/" target="_blank" rel="noopener">ActivityID</a>
+    </div>
+  </div>
+</div>
+
+<!-- =========================
+     Student App
+     ========================= -->
+<div class="app" id="appRoot">
+  <header>
+    <h1>Unit Fractions — Practice &amp; Test</h1>
+
+    <div class="heroNote">
+      ✅ You must score <strong>12/12 in the Practice Section</strong> to unlock the Test.<br/>
+      🧠 All fractions are unit fractions (numerator = 1) with denominators from <strong>2 to 12</strong>.<br/>
+      🧠 <strong>No pictorials are provided in the Test Section.</strong> Use reasoning and fraction strategies.
+    </div>
+
+    <div class="bar">
+      <label class="group" title="Show or hide pictures (Practice only — Test has no pictorials)">
+        <input id="togglePics" type="checkbox" checked />
+        <span>Show pictorials (Practice only)</span>
+      </label>
+      <label class="group" title="Choose one pictorial style (Practice only)">
+        <span>Pictorial type</span>
+        <select id="picType">
+          <option value="bar" selected>Bar</option>
+          <option value="pie">Pie</option>
+        </select>
+      </label>
+
+      <div class="tabs" role="tablist" aria-label="Mode">
+        <button id="tabPractice" class="tabbtn active" role="tab" aria-selected="true" aria-controls="practiceSec">Practice</button>
+        <button id="tabTest" class="tabbtn locked" role="tab" aria-selected="false" aria-controls="testSec" aria-disabled="true" title="Complete Practice (12/12) to unlock">Test</button>
+      </div>
+
+      <button id="teacherClear" class="teacherBtn" title="Teacher-only: start new session">[Teacher] New Session — Clear</button>
+    </div>
+  </header>
+
+  <!-- PRACTICE -->
+  <section id="practiceSec" role="tabpanel" aria-labelledby="tabPractice">
+    <div class="bar" style="margin-top:8px">
+      <div class="scorechip" id="scorePractice">
+        <span>Compare: <span id="pCmp">0</span><small>/4</small></span>
+        <span>Order ↑: <span id="pAsc">0</span><small>/4</small></span>
+        <span>Order ↓: <span id="pDesc">0</span><small>/4</small></span>
+        <span>Total: <span id="pTot">0</span><small>/12</small></span>
+      </div>
+    </div>
+
+    <section>
+      <h2>Practice A — Compare two unit fractions (×4)</h2>
+      <div class="note">Pick &lt; or &gt;. Press <b>Submit</b> on each question for instant feedback.</div>
+      <div id="practiceCompare"></div>
+    </section>
+
+    <section>
+      <h2>Practice B1 — Order (least → greatest) (×4)</h2>
+      <div class="note">Drag tiles from <b>smallest</b> to <b>largest</b>. Press <b>Submit</b> for instant feedback.</div>
+      <div id="practiceAsc"></div>
+    </section>
+
+    <section>
+      <h2>Practice B2 — Order (greatest → least) (×4)</h2>
+      <div class="note">Drag tiles from <b>largest</b> to <b>smallest</b>. Press <b>Submit</b> for instant feedback.</div>
+      <div id="practiceDesc"></div>
+    </section>
+
+    <div class="actions">
+      <button id="btnPracticeNew" class="appbtn secondary">New Practice Set</button>
+    </div>
+  </section>
+
+  <!-- TEST -->
+  <section id="testSec" class="hidden" role="tabpanel" aria-labelledby="tabTest" aria-hidden="true">
+    <div class="bar" style="margin-top:8px">
+      <div class="scorechip" id="scoreTest">
+        <span>Correct (after submit): <span id="tTot">0</span><small>/12</small></span>
+        <span style="margin-left:10px">Answered: <span id="tAns">0</span><small>/12</small></span>
+      </div>
+    </div>
+
+    <div class="card banner" id="firstAttemptBanner">✅ First submission recorded and sent to SLS.</div>
+    <div class="card banner" id="retryBanner">Review your answers and try to get all correct.</div>
+    <div class="card banner" id="congratsBanner">🎉 Congratulations! You completed the Test with all correct!</div>
+
+    <section>
+      <h2>TEST — 12 Questions (unit fractions 1/2–1/12, mixed, <u>no pictorials</u>)</h2>
+      <div class="note">Only your <b>first Submit Test</b> score is recorded in SLS. You may submit <b>anytime</b> — unanswered questions score 0. There is <b>no per-question feedback</b> here.</div>
+      <div id="testList"></div>
+    </section>
+
+    <div class="actions">
+      <button id="btnTestSubmit" class="appbtn">Submit Test</button>
+      <button id="btnTestNew" class="appbtn secondary">New Test Set</button>
+    </div>
+
+    <div id="miniSLS" aria-live="polite">
+      First submission score sent: <span id="miniScore">0</span>/12<br/>
+      (First overall submit only — sent to SLS)
+    </div>
+  </section>
+
+  <footer>
+    <div>🔄 New random unit-fraction questions appear each time you generate a set.</div>
+    <div>© 2025 Lim Kim Sze</div>
+  </footer>
+</div>
+
+<!-- ===== Practice Complete Modal (popup reminder) ===== -->
+<div id="practiceModal" class="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="pmTitle" aria-describedby="pmBody">
+  <div class="modal">
+    <h3 id="pmTitle">Great job! Practice complete 🎉</h3>
+    <p id="pmBody">
+      You scored <strong>12/12</strong> in Practice. You may now take the <strong>Test</strong>.<br/>
+      Note: <u>No pictorials</u> are provided in the Test Section.
+    </p>
+    <div class="row">
+      <button id="pmLater" class="btn secondary" type="button">Later</button>
+      <button id="pmGoTest" class="btn" type="button">Go to Test</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== Full App Script (P2 unit fractions version) ===================== */
+(function(){
+  const APP_SCOPE = String(window.ACTIVITY_ID || location.href);
+  const PAYLOAD_KEY = `sls_unlike_payload::${APP_SCOPE}::v1`;
+  const FIRST_KEY   = `UFCO-firstSubmit::${APP_SCOPE}`;
+
+  function pushToXAPI(score, feedback){
+    try {
+      const sInput = document.getElementById('score-input');
+      const fInput = document.getElementById('feedback-input');
+      if (sInput) sInput.value = score;
+      if (fInput) fInput.value = feedback || '';
+      if (typeof updateStore === 'function') { updateStore(); }
+      else if (typeof storeState === 'function') { storeState({ score, feedback }); }
+
+      const badge = document.getElementById('statusBadge');
+      if (badge){
+        badge.style.display='block';
+        badge.textContent = `Saved for SLS · Score ${score}` + (feedback ? ` · ${feedback}` : '');
+      }
+    } catch(e) {}
+  }
+
+  function writePayload(score, feedback, hiddenMarks){
+    try {
+      localStorage.setItem(PAYLOAD_KEY, JSON.stringify({ score, feedback, hiddenMarks, t: Date.now() }));
+    } catch(e){}
+  }
+  function readPayload(){
+    try { const raw = localStorage.getItem(PAYLOAD_KEY); return raw ? JSON.parse(raw) : null; } catch(e){ return null; }
+  }
+  function syncFromLocalToXAPI(){
+    const p = readPayload(); if (!p) return;
+    pushToXAPI(p.score, p.feedback);
+  }
+
+  window.addEventListener('load', syncFromLocalToXAPI);
+  window.addEventListener('visibilitychange', ()=>{ if(!document.hidden) syncFromLocalToXAPI(); });
+  window.addEventListener('focus', syncFromLocalToXAPI);
+  window.addEventListener('storage', (e)=>{ if (e.key === PAYLOAD_KEY && e.newValue) syncFromLocalToXAPI(); });
+
+  /* ===================== CONFIG: P2 unit fractions ===================== */
+  const DEN_MIN = 2, DEN_MAX = 12;
+  const PRACTICE_COUNTS = { cmp:4, asc:4, desc:4 };
+  const TEST_COUNTS     = { cmp:4, asc:4, desc:4 };
+  let idCounter = 0;
+  const uid = (p='id') => `${p}-${++idCounter}`;
+
+  const randInt = (min,max)=> Math.floor(Math.random()*(max-min+1))+min;
+  function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+  const value=(n,d)=> n/d;
+  const fracStr=(n,d)=> `${n}/${d}`;
+  const rel = (n1,d1,n2,d2) => { const L=n1*d2,R=n2*d1; return L===R?'=':(L<R?'<' : '>'); };
+
+  const fracHTML = (num, den) => `
+    <span class="frac" aria-label="${num} over ${den}">
+      <span class="num">${num}</span>
+      <span class="den">${den}</span>
+    </span>`;
+
+  /* ====== Pictorials (unchanged — now always num = 1) ====== */
+  let picType='bar';
+  function barSVG(num, den){
+    const W=132, H=22, r=4, cellW=W/den;
+    let lines=''; for(let i=1;i<den;i++){ const x=(i*cellW).toFixed(2); lines+=`<line x1="${x}" y1="1" x2="${x}" y2="${H-1}" stroke="currentColor" stroke-width="1"/>`; }
+    const w=cellW*num, fillRect=num>0?`<rect x="0" y="0" width="${w}" height="${H}" fill="currentColor" opacity="0.25"/>`:''; 
+    return `<svg class="pic" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">
+      ${fillRect}<rect x="0.5" y="0.5" width="${W-1}" height="${H-1}" rx="${r}" ry="${r}" fill="none" stroke="currentColor" stroke-width="1"/>${lines}
+    </svg>`;
+  }
+  function pieSVG(num, den){
+    const S=58,cx=S/2,cy=S/2,r=24,step=2*Math.PI/den;
+    const filled = (()=>{
+      if(num===0) return '';
+      if(num===den) return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="currentColor" opacity="0.25"/>`;
+      const start=-Math.PI/2,end=start+step*num;
+      const x1=cx+r*Math.cos(start),y1=cy+r*Math.sin(start),x2=cx+r*Math.cos(end),y2=cy+r*Math.sin(end);
+      const largeArc=(num*step)>Math.PI?1:0;
+      return `<path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z" fill="currentColor" opacity="0.25"/>`;
+    })();
+    let ticks=''; for(let k=0;k<den;k++){ const ang=-Math.PI/2+k*step,tx=cx+r*Math.cos(ang),ty=cy+r*Math.sin(ang); ticks+=`<line x1="${cx}" y1="${cy}" x2="${tx}" y2="${ty}" stroke="currentColor" stroke-width="0.6" opacity="0.15"/>`; }
+    return `<svg class="pic" width="${S}" height="${S}" viewBox="0 0 ${S} ${S}" aria-hidden="true">
+      ${filled}<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="currentColor" stroke-width="1"/>${ticks}
+    </svg>`;
+  }
+  function renderPic(n,d){ return picType==='pie'?pieSVG(n,d):barSVG(n,d); }
+
+  /* ====== UNIT-FRACTION GENERATORS (adapted from P2 questions) ====== */
+
+  function allDens(){
+    const list=[];
+    for(let i=DEN_MIN;i<=DEN_MAX;i++) list.push(i);
+    return list;
+  }
+
+  // Compare: set of "small-big" denominator pairs (so no repeats)
+  function takeUniqueUnitPair(used){
+    let attempts = 0;
+    while(attempts++ < 1000){
+      const dens = shuffle(allDens()).slice(0,2);
+      const d1 = dens[0], d2 = dens[1];
+      if(d1 === d2) continue;
+      const a = Math.min(d1,d2), b = Math.max(d1,d2);
+      const key = `${a}-${b}`;
+      if(!used.has(key)){
+        used.add(key);
+        return { n1:1, d1, n2:1, d2 };
+      }
+    }
+    // fallback (should rarely run)
+    for(let a=DEN_MIN;a<=DEN_MAX;a++){
+      for(let b=a+1;b<=DEN_MAX;b++){
+        const key = `${a}-${b}`;
+        if(!used.has(key)){
+          used.add(key);
+          return { n1:1, d1:a, n2:1, d2:b };
+        }
+      }
+    }
+  }
+
+  // Order: sorted triples of denominators [a<b<c], unique by triple
+  const tripleUsed = () => new Set();
+  function takeUniqueUnitTriple(used){
+    let attempts=0;
+    while(attempts++ < 1000){
+      const triple = shuffle(allDens()).slice(0,3).sort((x,y)=>x-y);
+      const key = triple.join('-');
+      if(!used.has(key)){
+        used.add(key);
+        // return as [[1,a],[1,b],[1,c]]
+        return triple.map(d => [1,d]);
+      }
+    }
+    // deterministic fallback
+    for(let a=DEN_MIN; a<=DEN_MAX-2; a++){
+      for(let b=a+1; b<=DEN_MAX-1; b++){
+        for(let c=b+1; c<=DEN_MAX; c++){
+          const key = `${a}-${b}-${c}`;
+          if(!used.has(key)){
+            used.add(key);
+            return [[1,a],[1,b],[1,c]];
+          }
+        }
+      }
+    }
+  }
+
+  /* ====== DOM builders (mostly unchanged) ====== */
+
+  function makeCompareRow(n1,d1,n2,d2, includePics=true, forTest=false, qNumber=null){
+    const row=document.createElement('div'); row.className='card compare-row'; row.dataset.kind='cmp'; row.dataset.answer=rel(n1,d1,n2,d2);
+    if(qNumber!==null){ const qn=document.createElement('div'); qn.className='qnum'; qn.textContent=`Q${qNumber}/12`; row.appendChild(qn); }
+
+    const left=document.createElement('div'); left.className='side';
+    left.innerHTML = `${fracHTML(n1,d1)}${includePics?`<div class="pict" data-role="pict" data-num="${n1}" data-den="${d1}">${renderPic(n1,d1)}</div>`:''}`;
+
+    const mid=document.createElement('div'); mid.style.display='flex'; mid.style.alignItems='center';
+    const sel=document.createElement('select'); sel.className='relop';
+    sel.innerHTML = `<option value="" disabled selected>?</option><option value="<">&lt;</option><option value=">">&gt;</option>`; /* no '=' needed for unit fractions */
+    const badge=document.createElement('span'); badge.className='result-badge'; mid.appendChild(sel); mid.appendChild(badge);
+
+    const right=document.createElement('div'); right.className='side';
+    right.innerHTML = `${fracHTML(n2,d2)}${includePics?`<div class="pict" data-role="pict" data-num="${n2}" data-den="${d2}">${renderPic(n2,d2)}</div>`:''}`;
+
+    row.appendChild(left); row.appendChild(mid); row.appendChild(right);
+
+    if(!forTest){
+      const actions=document.createElement('div'); actions.className='q-actions';
+      const submit=document.createElement('button'); submit.className='qbtn'; submit.textContent='Submit';
+      submit.addEventListener('click', ()=> gradeCompareCard(row));
+      actions.appendChild(submit);
+      row.appendChild(actions);
+    } else {
+      sel.addEventListener('change', ()=> markAnswered(row));
+    }
+
+    return row;
+  }
+
+  function makeTile(n,d, includePics=true, onDragChange){
+    const t=document.createElement('div'); t.className='tile'; t.draggable=true; t.dataset.num=String(n); t.dataset.den=String(d); t.id=uid('tile');
+    t.innerHTML = `<div class="label">${fracHTML(n,d)}</div>${includePics?`<div class="pic-wrap" data-role="pict" data-num="${n}" data-den="${d}">${renderPic(n,d)}</div>`:''}`;
+    t.addEventListener('dragstart', e=>{ t.classList.add('dragging'); e.dataTransfer.setData('text/plain', t.id); e.dataTransfer.effectAllowed='move'; });
+    t.addEventListener('dragend', ()=> t.classList.remove('dragging'));
+    t.addEventListener('dragover', e=> e.preventDefault());
+    t.addEventListener('drop', e=>{
+      e.preventDefault();
+      const dragId=e.dataTransfer.getData('text/plain'); const dragEl=document.getElementById(dragId);
+      if(!dragEl||dragEl===t) return;
+      const rect=t.getBoundingClientRect(); const before=e.clientX<rect.left+rect.width/2; const parent=t.parentElement;
+      if(before) parent.insertBefore(dragEl,t); else parent.insertBefore(dragEl,t.nextSibling);
+      if(typeof onDragChange==='function') onDragChange();
+    });
+    return t;
+  }
+
+  function makeOrderCard(fracs, idx, direction, includePics=true, forTest=false, qNumber=null){
+    const card=document.createElement('div'); card.className='card'; card.dataset.kind=(direction==='asc')?'asc':'desc';
+    if(qNumber!==null){ const qn=document.createElement('div'); qn.className='qnum'; qn.textContent=`Q${qNumber}/12`; card.appendChild(qn); }
+
+    const instr=document.createElement('div'); instr.className='order-instr';
+    instr.textContent = `Arrange from ${direction==='asc' ? 'least (left) to greatest (right)' : 'greatest (left) to least (right)'} .`;
+
+    const cont=document.createElement('div'); cont.className='sortable';
+    const correct=fracs.slice().sort((a,b)=>{ const va=value(a[0],a[1]),vb=value(b[0],b[1]); return direction==='asc'?(va-vb):(vb-va);});
+    cont.dataset.correct=correct.map(([n,d])=>fracStr(n,d)).join(',');
+    const notifyAnswered = ()=> { if(forTest) markAnswered(card); };
+    shuffle(fracs.slice()).forEach(([n,d])=>cont.appendChild(makeTile(n,d, includePics, notifyAnswered)));
+    cont.addEventListener('dragover', e=>{ e.preventDefault(); e.dataTransfer.dropEffect='move'; });
+    cont.addEventListener('drop', e=>{ e.preventDefault(); const dragId=e.dataTransfer.getData('text/plain'); const dragEl=document.getElementById(dragId);
+      if(dragEl && dragEl.parentElement!==cont) cont.appendChild(dragEl);
+      if(forTest) markAnswered(card);
+    });
+
+    card.appendChild(instr); card.appendChild(cont);
+
+    if(!forTest){
+      const actions=document.createElement('div'); actions.className='q-actions';
+      const submit=document.createElement('button'); submit.className='qbtn'; submit.textContent='Submit';
+      submit.addEventListener('click', ()=> gradeOrderCard(cont));
+      actions.appendChild(submit);
+      card.appendChild(actions);
+    }
+
+    return card;
+  }
+
+  const practiceCompare=document.getElementById('practiceCompare');
+  const practiceAsc=document.getElementById('practiceAsc');
+  const practiceDesc=document.getElementById('practiceDesc');
+  const testList=document.getElementById('testList');
+
+  function buildPractice(){
+    const usedCmp=new Set(), usedTriA=tripleUsed(), usedTriD=tripleUsed();
+    practiceCompare.innerHTML=''; practiceAsc.innerHTML=''; practiceDesc.innerHTML='';
+    for(let i=0;i<PRACTICE_COUNTS.cmp;i++){
+      const {n1,d1,n2,d2}=takeUniqueUnitPair(usedCmp);
+      practiceCompare.appendChild(makeCompareRow(n1,d1,n2,d2, true, false));
+    }
+    for(let i=0;i<PRACTICE_COUNTS.asc;i++){
+      const fr=takeUniqueUnitTriple(usedTriA);
+      practiceAsc.appendChild(makeOrderCard(fr,i,'asc', true, false));
+    }
+    for(let i=0;i<PRACTICE_COUNTS.desc;i++){
+      const fr=takeUniqueUnitTriple(usedTriD);
+      practiceDesc.appendChild(makeOrderCard(fr,i,'desc', true, false));
+    }
+  }
+
+  function buildTest(){
+    const usedCmp=new Set(), usedTriA=tripleUsed(), usedTriD=tripleUsed(); testList.innerHTML=''; const cards=[];
+    for(let i=0;i<TEST_COUNTS.cmp;i++){
+      const {n1,d1,n2,d2}=takeUniqueUnitPair(usedCmp);
+      cards.push(makeCompareRow(n1,d1,n2,d2, false, true));
+    }
+    for(let i=0;i<TEST_COUNTS.asc;i++){
+      const fr=takeUniqueUnitTriple(usedTriA);
+      cards.push(makeOrderCard(fr,i,'asc', false, true));
+    }
+    for(let i=0;i<TEST_COUNTS.desc;i++){
+      const fr=takeUniqueUnitTriple(usedTriD);
+      cards.push(makeOrderCard(fr,i,'desc', false, true));
+    }
+    shuffle(cards);
+    cards.forEach((card, idx)=>{
+      const qn=document.createElement('div'); qn.className='qnum'; qn.textContent=`Q${idx+1}/12`;
+      card.insertBefore(qn, card.firstChild);
+      card.classList.remove('correct','incorrect');
+      card.removeAttribute('data-answered');
+      testList.appendChild(card);
+    });
+    document.getElementById('tTot').textContent='0';
+    document.getElementById('tAns').textContent='0';
+    hideBanners();
+  }
+
+  const togglePics=document.getElementById('togglePics');
+  const picTypeSel=document.getElementById('picType');
+  const practiceRoot=document.getElementById('practiceSec');
+
+  function refreshAllPracticePictorials() {
+    const show = !!(togglePics && togglePics.checked);
+    practiceRoot.querySelectorAll('[data-role="pict"]').forEach(el => {
+      el.style.display = show ? '' : 'none';
+    });
+    if (show) {
+      practiceRoot.querySelectorAll('[data-role="pict"]').forEach(el => {
+        const n = Number(el.dataset.num);
+        const d = Number(el.dataset.den);
+        if (!Number.isFinite(n) || !Number.isFinite(d) || d === 0) return;
+        el.innerHTML = (picType === 'pie') ? pieSVG(n, d) : barSVG(n, d);
+      });
+    }
+  }
+  function afterBuildPractice_applyPictorials() {
+    practiceRoot.querySelectorAll('[data-role="pict"]').forEach(el => {
+      if (!el.hasAttribute('data-num') || !el.hasAttribute('data-den')) {
+        const frac = el.parentElement?.querySelector('.frac');
+        const num = frac?.querySelector('.num')?.textContent?.trim();
+        const den = frac?.querySelector('.den')?.textContent?.trim();
+        if (num && den) { el.dataset.num = num; el.dataset.den = den; }
+      }
+    });
+    refreshAllPracticePictorials();
+  }
+  if (togglePics) {
+    togglePics.addEventListener('change', refreshAllPracticePictorials);
+  }
+  if (picTypeSel) {
+    picTypeSel.addEventListener('change', () => {
+      picType = picTypeSel.value === 'pie' ? 'pie' : 'bar';
+      refreshAllPracticePictorials();
+    });
+  }
+
+  function arraysEqual(a,b){ return a.length===b.length && a.every((v,i)=>v===b[i]); }
+
+  function gradeCompareCard(row){
+    const correct=row.dataset.answer; const sel=row.querySelector('select.relop'); const chosen=sel.value; const badge=row.querySelector('span.result-badge');
+    row.classList.remove('correct','incorrect'); badge.textContent='';
+    if(!chosen) return;
+    if(chosen===correct){ row.classList.add('correct'); badge.textContent='✓'; badge.style.color='var(--good)'; }
+    else { row.classList.add('incorrect'); badge.textContent='✗'; badge.style.color='var(--bad)'; }
+    refreshPracticeTotals();
+  }
+  function gradeOrderCard(cont){
+    cont.classList.remove('correct','incorrect');
+    const correct=cont.dataset.correct.split(','), chosen=[...cont.querySelectorAll('.tile')].map(t=>`${t.dataset.num}/${t.dataset.den}`);
+    const ok=arraysEqual(correct,chosen); if(ok){ cont.classList.add('correct'); } else { cont.classList.add('incorrect'); }
+    refreshPracticeTotals();
+  }
+
+  const tabPractice=document.getElementById('tabPractice');
+  const tabTest=document.getElementById('tabTest');
+  const practiceSec=document.getElementById('practiceSec');
+  const testSec=document.getElementById('testSec');
+
+  function showPractice(){ 
+    tabPractice.classList.add('active'); tabPractice.setAttribute('aria-selected','true');
+    tabTest.classList.remove('active'); tabTest.setAttribute('aria-selected','false');
+    practiceSec.classList.remove('hidden'); practiceSec.removeAttribute('aria-hidden');
+    testSec.classList.add('hidden'); testSec.setAttribute('aria-hidden','true');
+  }
+  function showTest(){ 
+    tabTest.classList.add('active'); tabTest.setAttribute('aria-selected','true');
+    tabPractice.classList.remove('active'); tabPractice.setAttribute('aria-selected','false');
+    testSec.classList.remove('hidden'); testSec.removeAttribute('aria-hidden','true');
+    practiceSec.classList.add('hidden'); practiceSec.setAttribute('aria-hidden','true');
+  }
+
+  function setTestLocked(locked){
+    if(locked){
+      tabTest.classList.add('locked');
+      tabTest.setAttribute('aria-disabled','true');
+      tabTest.setAttribute('title','Complete Practice (12/12) to unlock');
+      showPractice();
+    }else{
+      tabTest.classList.remove('locked');
+      tabTest.removeAttribute('aria-disabled');
+      tabTest.removeAttribute('title');
+    }
+  }
+  function enforceTestLock(unlocked){
+    setTestLocked(!unlocked);
+    if(unlocked) maybeShowPracticeModal();
+  }
+
+  tabPractice.addEventListener('click', showPractice);
+  tabTest.addEventListener('click', ()=>{
+    if(tabTest.classList.contains('locked')){
+      alert('Complete Practice (score 12/12) to unlock the Test. Note: No pictorials in Test.');
+      return;
+    }
+    showTest();
+  });
+
+  function markAnswered(el){
+    const realCard = el.classList.contains('card') ? el : el.closest('.card');
+    if(realCard && !realCard.dataset.answered){
+      realCard.dataset.answered='1';
+      refreshTestAnswered();
+    }
+  }
+  function refreshTestAnswered(){
+    const answered = document.querySelectorAll('#testSec .card[data-answered="1"]').length;
+    document.getElementById('tAns').textContent = String(answered);
+  }
+
+  function computeTestScoreAndTypes(){
+    let correctCmp=0, correctAsc=0, correctDesc=0;
+    document.querySelectorAll('#testSec .compare-row').forEach(row=>{
+      const correct=row.dataset.answer; const sel=row.querySelector('select.relop'); const chosen=sel.value;
+      const ok = !!chosen && chosen===correct;
+      row.classList.remove('correct','incorrect');
+      if(ok){ row.classList.add('correct'); correctCmp++; }
+      else { row.classList.add('incorrect'); }
+    });
+    document.querySelectorAll('#testSec .sortable').forEach(cont=>{
+      const correct=cont.dataset.correct.split(','), chosen=[...cont.querySelectorAll('.tile')].map(t=>`${t.dataset.num}/${t.dataset.den}`);
+      const ok=arraysEqual(correct,chosen);
+      cont.classList.remove('correct','incorrect');
+      const parent = cont.closest('.card');
+      const isAsc = parent && parent.dataset.kind==='asc';
+      if(ok){ cont.classList.add('correct'); if(isAsc) correctAsc++; else correctDesc++; }
+      else { cont.classList.add('incorrect'); }
+    });
+    const score = correctCmp + correctAsc + correctDesc;
+    const wrongCmp  = 4 - correctCmp;
+    const wrongAsc  = 4 - correctAsc;
+    const wrongDesc = 4 - correctDesc;
+    return { score, correctCmp, correctAsc, correctDesc, wrongCmp, wrongAsc, wrongDesc };
+  }
+
+  function feedbackMarksTail(){
+    const parts=[];
+    const cmpRows=[...testList.querySelectorAll('.compare-row')];
+    const cmpMarks=cmpRows.map((row,idx)=>{
+      const sel=row.querySelector('select.relop'); const chosen=sel.value||'?';
+      const ok=(chosen && row.classList.contains('correct'))?1:0;
+      return `C${idx+1}:${ok}`;
+    }).join(' ');
+    parts.push(cmpMarks);
+    const ordRows=[...testList.querySelectorAll('.sortable')];
+    const ordMarks=ordRows.map((cont,idx)=>`O${idx+1}:${cont.classList.contains('correct')?1:0}`).join(' ');
+    parts.push(ordMarks);
+    return parts.join(' | ');
+  }
+
+  function buildHiddenMarks(stats){
+    return feedbackMarksTail();
+  }
+
+  function buildTeacherFeedback(score12, stats){
+    const { correctCmp, correctAsc, correctDesc, wrongCmp, wrongAsc, wrongDesc } = stats;
+    const byType = `Compare ${correctCmp}C/${wrongCmp}W | Order↑ ${correctAsc}C/${wrongAsc}W | Order↓ ${correctDesc}C/${wrongDesc}W`;
+    return `Unit Fractions — first test submit ${score12}/12 | ${byType}`;
+  }
+
+  const firstAttemptBanner=document.getElementById('firstAttemptBanner');
+  const retryBanner=document.getElementById('retryBanner');
+  const congratsBanner=document.getElementById('congratsBanner');
+  const miniScoreEl=document.getElementById('miniScore');
+  const tTotEl=document.getElementById('tTot');
+
+  function hideBanners(){ [firstAttemptBanner,retryBanner,congratsBanner].forEach(b=>b && b.classList.remove('show')); }
+
+  function hasPostedFirstSubmit(){ try{ return localStorage.getItem(FIRST_KEY)==='1'; }catch(e){ return false; } }
+  function lockFirstSubmit(){ try{ localStorage.setItem(FIRST_KEY,'1'); }catch(e){} }
+
+  function postFirstSubmitIfNeeded(score12, feedback, hiddenMarks){
+    if(hasPostedFirstSubmit()) return false;
+    writePayload(score12, feedback, hiddenMarks);
+    pushToXAPI(score12, feedback);
+    lockFirstSubmit();
+    return true;
+  }
+
+  document.getElementById('btnTestSubmit').addEventListener('click', ()=>{
+    hideBanners();
+    document.querySelectorAll('#testSec .correct,#testSec .incorrect').forEach(el=>el.classList.remove('correct','incorrect'));
+    const stats = computeTestScoreAndTypes();
+    const score = stats.score;
+    if(tTotEl) tTotEl.textContent=String(score);
+    if(miniScoreEl) miniScoreEl.textContent=String(score);
+    const feedback = buildTeacherFeedback(score, stats);
+    const hiddenMarks = buildHiddenMarks(stats);
+    const justPosted = postFirstSubmitIfNeeded(score, feedback, hiddenMarks);
+    if(justPosted) firstAttemptBanner.classList.add('show');
+    if(score===12){ congratsBanner.classList.add('show'); }
+    else{ retryBanner.classList.add('show'); }
+  });
+
+  document.getElementById('btnTestNew').addEventListener('click', ()=>{
+    hideBanners(); buildTest(); document.getElementById('tTot').textContent='0'; miniScoreEl.textContent='0';
+  });
+
+  let practiceModalShown = false;
+  const pm = document.getElementById('practiceModal');
+  const pmGo = document.getElementById('pmGoTest');
+  const pmLater = document.getElementById('pmLater');
+
+  function showPracticeModal(){ pm.style.display='flex'; }
+  function hidePracticeModal(){ pm.style.display='none'; }
+  function maybeShowPracticeModal(){
+    if(!practiceModalShown && !tabTest.classList.contains('locked')){
+      practiceModalShown = true;
+      showPracticeModal();
+    }
+  }
+  pmLater.addEventListener('click', hidePracticeModal);
+  pmGo.addEventListener('click', ()=>{
+    if (!tabTest.classList.contains('locked')){
+      showTest();
+      const firstQ = document.getElementById('testSec').querySelector('.card');
+      if(firstQ){ firstQ.scrollIntoView({behavior:'smooth', block:'start'}); firstQ.tabIndex = -1; firstQ.focus({preventScroll:true}); }
+    }
+    hidePracticeModal();
+  });
+
+  function refreshPracticeTotals(){
+    const pCmp = document.querySelectorAll('#practiceSec .compare-row.correct').length;
+    const pAsc = document.querySelectorAll('#practiceAsc .sortable.correct').length;
+    const pDesc= document.querySelectorAll('#practiceDesc .sortable.correct').length;
+    const total = pCmp+pAsc+pDesc;
+    document.getElementById('pCmp').textContent=pCmp;
+    document.getElementById('pAsc').textContent=pAsc;
+    document.getElementById('pDesc').textContent=pDesc;
+    document.getElementById('pTot').textContent=total;
+    enforceTestLock(total===12);
+  }
+
+  document.getElementById('btnPracticeNew').addEventListener('click', ()=>{
+    buildPractice();
+    document.querySelectorAll('#practiceSec .correct,#practiceSec .incorrect').forEach(el=>el.classList.remove('correct','incorrect'));
+    document.querySelectorAll('#practiceSec .result-badge').forEach(b=>b.textContent='');
+    document.getElementById('pCmp').textContent='0';
+    document.getElementById('pAsc').textContent='0';
+    document.getElementById('pDesc').textContent='0';
+    document.getElementById('pTot').textContent='0';
+    practiceModalShown = false;
+    enforceTestLock(false);
+  });
+
+  document.getElementById('teacherClear').addEventListener('click', ()=>{
+    if(!confirm('Start a NEW SESSION? This clears local first-submit payload and reloads with ?newSession=1.')) return;
+    try{
+      localStorage.removeItem(FIRST_KEY);
+      localStorage.removeItem(PAYLOAD_KEY);
+    }catch(e){}
+    const url = new URL(location.href);
+    url.searchParams.set('newSession','1');
+    location.href = url.toString();
+  });
+
+  buildPractice();
+  buildTest();
+  window.addEventListener('load', ()=> {
+    const sel = document.getElementById('picType');
+    picType = (sel && sel.value === 'pie') ? 'pie' : 'bar';
+    afterBuildPractice_applyPictorials();
+  });
+
+  enforceTestLock(false);
+  showPractice();
+
+  const saveStoreBtn = document.getElementById('save-store');
+  if(saveStoreBtn){
+    saveStoreBtn.addEventListener('click', ()=>{
+      const sVal = Number(document.getElementById('score-input').value || 0);
+      const fVal = String(document.getElementById('feedback-input').value || "");
+      writePayload(sVal, fVal, undefined);
+      pushToXAPI(sVal, fVal);
+    });
+  }
+  const clearBtn = document.getElementById('clear-inputs');
+  if(clearBtn){
+    clearBtn.addEventListener('click', ()=>{
+      document.getElementById('score-input').value = '';
+      document.getElementById('feedback-input').value = '';
+      writePayload(0, '', undefined);
+      pushToXAPI(0, '');
+    });
+  }
+
+})(); 
+</script>
+</body>
+</html>
